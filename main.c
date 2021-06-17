@@ -21,6 +21,9 @@ struct current
 
     char field[ym][xm];
     int lost;
+    int points;
+    int level;
+    int speed;
 };
 
 struct blox
@@ -77,6 +80,7 @@ int borders(int newx, int newy, struct current *player)
                     return 1;
     
     //Remove lines
+    int nr = 0;
     for (size_t i = 0; i < 20; i++)
     {
         int flagB = 1;
@@ -85,9 +89,34 @@ int borders(int newx, int newy, struct current *player)
                 flagB = 0;
         
         if (flagB == 1)
+        {
+            nr++;
             for (size_t k = i; k > 0; k--)
                 for (size_t m = 0; m < 10; m++)
-                    player->field[k][m] = player->field[k-1][m];    
+                    player->field[k][m] = player->field[k-1][m];
+        }
+    }
+
+    switch (nr)
+    {
+    case 1:
+        player->points += 40 * (player->level + 1);
+        break;
+    
+    case 2:
+        player->points += 100 * (player->level + 1);
+        break;
+    
+    case 3:
+        player->points += 300 * (player->level + 1);
+        break;
+    
+    case 4:
+        player->points += 1200 * (player->level + 1);
+        break;
+    
+    default:
+        break;
     }
 
     // Formen
@@ -109,16 +138,22 @@ int borders(int newx, int newy, struct current *player)
     }
 
     // Left and Right
-    else if (newx < 0)
+    else if ((newx < 0) || ((newx + player->w) >= 11))
         return 0;
-    
-    else if ((newx + player->w) >= 11)
-        return 0;
-    
+
     // Move
     else
     {
-        player->xP = newx;
+        // Left Right Collision
+        int collisionFlag = 0;
+        for (size_t i = 0; i < player->h; i++)
+            if (((player->data[i][0] != ' ') || (player->field[i][player->w] != ' ')) && ((player->field[player->yP + i][newx] != ' ') || (player->field[player->yP + i][newx + player->w] != ' ')))
+                collisionFlag = 1;
+
+        // Left and Right Blocks
+        if (collisionFlag == 0)
+            player->xP = newx;
+
         player->yP = newy;
     }
 
@@ -139,6 +174,9 @@ void print_screen(struct current *player)
                 tmpfield[j + player->yP][i + player->xP] = player->data[j][i];
 
     clear_screen();
+    for (size_t a = 0; a < 23; a++)
+        printf("-");
+    printf("\n   Level: %i    \n   Points: %i   \n", player->level, player->points);
     for (size_t a = 0; a < 23; a++)
         printf("-");
 
@@ -165,14 +203,24 @@ void turn(int dir, struct current *player)
     int new[4][4];
 
     if (dir == 1)
+    {
+        if ((player->xP + h) > 10)
+            player->xP = 10 - h;
+
         for (size_t i = 0; i < w; i++)
             for (size_t j = 0, k = (h-1); j < h; j++, k--)
                 new[i][k] = player->data[j][i];
+    }
     
     else if (dir == -1)
+    {
+        if ((player->xP + h) > 10)
+            player->xP = 10 - h;
+            
         for (size_t i = 0, k = (w-1); i < w; i++, k--)
             for (size_t j = 0; j < h; j++)
                 new[k][j] = player->data[j][i];
+    }
     
     player->w = h;
     player->h = w;
@@ -193,6 +241,8 @@ int main()
             player.field[i][j] = ' ';
     int ret = 0;
     int ms = 0;
+    player.points = 0;
+    player.level = 0;
 
     // random
     srand(time(NULL));
