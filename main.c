@@ -200,6 +200,27 @@ void turn(int dir, struct current *player)
     int w = player->w;
     int h = player->h;
 
+    // if (player->w == 4)
+    // {
+    //     player->xP +=2;
+    //     player->yP -=2;
+    // }
+    // else if (player->w == 1)
+    // {
+    //     player->xP -=2;
+    //     player->yP +=2;
+    // }
+    // else if (player->w == 2)
+    // {
+    //     player->xP +=2;
+    //     player->yP -=2;
+    // }
+    // else if (player->w == 1)
+    // {
+    //     player->xP -=2;
+    //     player->yP +=2;
+    // }
+
     int new[4][4];
 
     if (dir == 1)
